@@ -1,0 +1,8 @@
+---
+- name: Example Playbook - Check Connection
+  hosts: all # Target all hosts defined in the inventory
+  gather_facts: no # Skip gathering detailed facts about the hosts for this simple playbook
+
+  tasks:
+    - name: Ping hosts
+      ansible.builtin.ping: 

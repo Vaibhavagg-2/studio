@@ -38,3 +38,21 @@ yarn-error.log*
 next-env.d.ts
 
 .genkit/*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+ansible/inventory/hosts # Often generated dynamically or contains sensitive info
+*.vault # Encrypted secrets file
+ansible/.vault_pass # Vault password file

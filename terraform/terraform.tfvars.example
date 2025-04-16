@@ -1,0 +1,4 @@
+gcp_project  = "centering-chess-457005-f0"
+gcp_region   = "us-central1"
+environment  = "dev"
+project_name = "next-app" 

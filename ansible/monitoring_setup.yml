@@ -1,0 +1,8 @@
+---
+- name: Setup Monitoring Server
+  hosts: monitoring # Target hosts group (needs to be defined in inventory)
+  gather_facts: yes
+
+  roles:
+    - prometheus
+    - grafana 

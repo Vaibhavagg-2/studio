@@ -1,0 +1,46 @@
+---
+# tasks file for ansible/roles/grafana (assuming Debian/Ubuntu)
+
+- name: Update apt cache
+  become: yes # Run with sudo
+  ansible.builtin.apt:
+    update_cache: yes
+  changed_when: false # Don't report change for cache update
+
+- name: Install prerequisites
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - wget
+    state: present
+
+- name: Add Grafana GPG key
+  become: yes
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /usr/share/keyrings/grafana.key
+    mode: '0644'
+    force: true # Overwrite if exists, helps with key updates
+
+- name: Add Grafana APT repository
+  become: yes
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main"
+    state: present
+    filename: grafana
+
+- name: Install Grafana
+  become: yes
+  ansible.builtin.apt:
+    name: grafana
+    state: latest # Install the latest version
+    update_cache: yes
+
+- name: Ensure Grafana service is started and enabled
+  become: yes
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: started
+    enabled: yes 

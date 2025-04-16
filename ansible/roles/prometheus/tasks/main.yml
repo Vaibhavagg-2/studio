@@ -1,0 +1,121 @@
+---
+# tasks file for ansible/roles/prometheus
+
+- name: Define prometheus version and checksums
+  ansible.builtin.set_fact:
+    prometheus_version: "2.54.1" # Check for the latest stable version
+    prometheus_checksum_amd64: "sha256:30fbfcebe7b1210481503359a2997688d74f3bdc88d53d7641e9d9a1a2a7a540"
+    prometheus_checksum_arm64: "sha256:60d4d470f411d90f35602d45b529efaf7184186ae4d928c7f1e6526c171c8b5e"
+
+- name: Set architecture-specific vars
+  ansible.builtin.set_fact:
+    prometheus_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    prometheus_checksum: "{{ prometheus_checksum_arm64 if ansible_architecture == 'aarch64' else prometheus_checksum_amd64 }}"
+
+- name: Create Prometheus system group
+  become: yes
+  ansible.builtin.group:
+    name: prometheus
+    state: present
+    system: yes
+
+- name: Create Prometheus system user
+  become: yes
+  ansible.builtin.user:
+    name: prometheus
+    group: prometheus
+    shell: /sbin/nologin
+    system: yes
+    create_home: no
+
+- name: Create Prometheus directories
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Download and unpack Prometheus
+  become: yes
+  ansible.builtin.unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ prometheus_arch }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+    checksum: "{{ prometheus_checksum }}"
+  notify:
+    - Restart prometheus
+
+- name: Copy Prometheus binaries
+  become: yes
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ prometheus_arch }}/{{ item }}"
+    dest: "/usr/local/bin/"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: yes
+  loop:
+    - prometheus
+    - promtool
+  notify:
+    - Restart prometheus
+
+- name: Copy Prometheus console libraries
+  become: yes
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ prometheus_arch }}/{{ item }}"
+    dest: "/etc/prometheus/{{ item }}"
+    owner: prometheus
+    group: prometheus
+    remote_src: yes
+  loop:
+    - consoles
+    - console_libraries
+  notify:
+    - Restart prometheus
+
+- name: Create Prometheus configuration file from template
+  become: yes
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify:
+    - Restart prometheus
+
+- name: Create Prometheus systemd service file
+  become: yes
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart prometheus
+
+- name: Ensure Prometheus service is started and enabled
+  become: yes
+  ansible.builtin.systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+    daemon_reload: yes # Ensure systemd reads the new service file
+
+- name: Clean up downloaded archive
+  become: yes
+  ansible.builtin.file:
+    path: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ prometheus_arch }}.tar.gz"
+    state: absent
+
+- name: Clean up extracted directory
+  become: yes
+  ansible.builtin.file:
+    path: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ prometheus_arch }}"
+    state: absent 

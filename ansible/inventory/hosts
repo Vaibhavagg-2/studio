@@ -1,0 +1,14 @@
+# Example inventory file
+# You can define groups using [group_name]
+# Hosts can be listed by IP or hostname
+
+[webservers]
+# server1.example.com ansible_host=192.168.1.100
+# server2.example.com ansible_host=192.168.1.101
+
+# [databases]
+# db1.example.com
+
+# [all:vars]
+# Variables applying to all hosts
+# ansible_user=your_ssh_user 

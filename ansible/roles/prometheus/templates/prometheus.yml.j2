@@ -1,0 +1,33 @@
+# Global Prometheus configuration
+global:
+  scrape_interval: 15s # Default scrape interval
+  evaluation_interval: 15s # Default evaluation interval
+
+# Alertmanager configuration (Optional, add if you use Alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+# rule_files:
+#   - "/etc/prometheus/rules/*.rules"
+
+# Scrape configuration
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Example job: Scrape node_exporter (if you install it on targets)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node1.example.com:9100', 'node2.example.com:9100']
+
+  # Example job: Scrape your Next.js app (if it exposes /metrics)
+  # Replace with actual targets from inventory or service discovery
+  # - job_name: 'nextjs_app'
+  #   static_configs:
+  #     - targets: ['app1.example.com:9002', 'app2.example.com:9002'] # Assuming app runs on 9002 and exposes /metrics 
