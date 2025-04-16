@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Generates recipes based on a list of ingredients provided by the user.
+ * @fileOverview Generates recipes based on a list of ingredients provided by the user, using only those ingredients.
  *
  * - generateRecipes - A function that handles the recipe generation process.
  * - GenerateRecipesInput - The input type for the generateRecipes function.
@@ -50,11 +50,11 @@ const prompt = ai.definePrompt({
       ).describe('A list of recipes that can be made with the given ingredients.'),
     }),
   },
-  prompt: `You are a recipe generation expert. You take a list of ingredients and generate recipes that can be made with them.
+  prompt: `You are a recipe generation expert. You take a list of ingredients and generate recipes that can be made with them. You MUST ONLY use the ingredients provided.
 
   Ingredients: {{{ingredients}}}
 
-  Generate a list of recipes that can be made with the given ingredients.  Include the name, a short description, a list of ingredients, and instructions for each recipe.  Be creative!
+  Generate a list of recipes that can be made with the given ingredients. Include the name, a short description, a list of ingredients, and instructions for each recipe. Be creative!
   `,
 });
 
